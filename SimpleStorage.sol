@@ -21,7 +21,9 @@ contract SimpleStorage{
         uint256 favouriteNumber;
         string name;
     }
-    
+
+    People[] public people;
+
     function store(uint256 _favouriteNumber) public {
         favouriteNumber = _favouriteNumber;
     }
@@ -29,6 +31,10 @@ contract SimpleStorage{
     //view and pure functions do not spend any gas
     function retrieve() public view returns(uint256){
         return favouriteNumber;
+    }
+
+    function addPerson(string memory _name, uint256 _favouriteNumber) public{
+        people.push(People(_favouriteNumber, _name));
     }
 
 }
