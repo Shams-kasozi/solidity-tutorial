@@ -14,7 +14,14 @@ contract SimpleStorage{
     // bytes32 favouriteBytes = "cat";
 
     uint256 favouriteNumber;
+    uint256 public brothersfavouriteNumber;
+    People public person = People({favouriteNumber: 2, name: "Shams"});
 
+    struct People{
+        uint256 favouriteNumber;
+        string name;
+    }
+    
     function store(uint256 _favouriteNumber) public {
         favouriteNumber = _favouriteNumber;
     }
