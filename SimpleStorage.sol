@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.14; // this is the solidity version to be used
+
 contract SimpleStorage{
     // Premitive types in solidity include used to define variables
     // boolean, uint, int, address, bytes
@@ -14,8 +15,9 @@ contract SimpleStorage{
     // bytes32 favouriteBytes = "cat";
 
     uint256 favouriteNumber;
-    uint256 public brothersfavouriteNumber;
-    People public person = People({favouriteNumber: 2, name: "Shams"});
+
+    //mapping variable, used to get one's favorite number given the name
+    mapping(string => uint256) public nameToFavouriteNumber;
 
     struct People{
         uint256 favouriteNumber;
@@ -30,12 +32,11 @@ contract SimpleStorage{
 
     //view and pure functions do not spend any gas
     function retrieve() public view returns(uint256){
-        return favouriteNumber;
+        return favouriteNumber; 
     }
 
     function addPerson(string memory _name, uint256 _favouriteNumber) public{
         people.push(People(_favouriteNumber, _name));
+        nameToFavouriteNumber[_name] = _favouriteNumber;
     }
-
 }
-//0xd9145CCE52D386f254917e481eB44e9943F39138
