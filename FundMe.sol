@@ -2,51 +2,66 @@
 
 pragma solidity ^0.8.8;
 
-import "./AggregatorV3Interface.sol";
-//we need to get funds from users
-//withdraw finds
-//set a minimum funding value in USD
+import "./PriceConverter.sol";
 
 contract FundMe {
 
+    using PriceConverter for uint256;
+
     uint256 public minimumUsd = 50 * 1e18; //1 * 10 ** 18
 
-    //this array would keep the funders to have donated
     address[] public funders;
 
-    //you could also keep a list of those who donated in this mapping
     mapping(address => uint256) public addressToAmountFunded;
 
+    //our funding method is now complete
     function fund() public payable{
-        //1. How do we send ETH to this contract?
-        //we use 'msg.value' to set the value of how much someone has to send
-        require(getConversionRate(msg.value) >= minimumUsd, "Didn't send enough ETH"); 
-        //1e18 == 1 * 10^18 == 1000000000000000000, thats 1 with 18 zeros
-
-        //here we are adding those who have donated to the funders array
+        require(msg.value.getConversionRate() >= minimumUsd, "Didn't send enough ETH"); 
         funders.push(msg.sender);
-        addressToAmountFunded[msg.sender] = msg.value;
+        addressToAmountFunded[msg.sender] += msg.value;
     }
 
-    function getPrice() public view returns(uint256){
-        //ABI
-        //Address 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
-        (,int256 price,,,) = priceFeed.latestRoundData();
-        //ETH in terms of USD
-        //3000,00000000
-        return uint256(price * 1e10); //1**10 == 10000000000
+    //we will have to reset our funders array in our addressToAmountFunded to zero,
+    //since we are going to withdraw all the funds to carry out activities
+    //using a for loop
+    function withdraw() public {
+        /* starting index, still available indexes, step amount*/
+        for(uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++){
+            //code
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+        // now we reset the array with funders to zero elements
+        funders = new address[](0);
+        //now we do the actual withdraw of the funds
+
+        //there are 3 ways to send or transfer funds 
+        //i.e. transfer, send and call
+
+        //the example below elaborates the 'transfer' method and how it can be used
+        //the drawback of this 'transfer' method is that it's capped at 2300gas, so it 
+        //throws an error and revert the transaction when you exceed that limit
+
+        //to transfer the funds to whoever ran the withdraw function, we do this
+        payable(msg.sender).transfer(address(this).balance);//balance is the native 
+        // blockchain currency balance or etherium currency balance of this address
+        //msg.sender is of type 'address'
+        //while as payable(msg.sender) is of type payable address
+
+        //the example below elaborates the 'send' method and how it can be used
+        //this method is also capped at 2300gas but it wont throw an error when
+        //exceed the limit, instead it will return a boolean of whether or not it was
+        //successful
+        bool sendSuccess = payable(msg.sender).send(address(this).balance);
+        //if the above fails, i.e. 'sendSuccess'then "Sending failed" will be returned
+        require(sendSuccess, "Sending failed");
+
+        //the example below elaborates the 'call' method and how it can be used
+        //this is one of the first lower level commands used in solidity and it's
+        //incredibly powerful and can be used to call any function in all of etherium 
+        //without even having to have the ABI
+        (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed")
     }
 
-    function getVersion() public view returns (uint256){
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
-        return priceFeed.version();
-    }
-
-    function getConversionRate(uint256 ethAmount) public view returns (uint256){
-        uint256 ethPrice = getPrice();
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;
-        return ethAmountInUsd;
-    }
-    // function withdraw(){}
 }
