@@ -61,7 +61,7 @@ contract FundMe {
         //incredibly powerful and can be used to call any function in all of etherium 
         //without even having to have the ABI
         (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
-        require(callSuccess, "Call failed")
+        require(callSuccess, "Call failed");
     }
 
 }
