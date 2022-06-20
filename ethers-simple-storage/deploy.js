@@ -3,17 +3,16 @@ const fs = require("fs-extra")
 require('dotenv').config()
 
 async function main(){
-    //http:0.0.0.0:8545
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL)
-    // const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
 
     //changing the way we access our private key
-    const encryptedJson = fs.readFileSync("./encryptedKey.json", "utf8")
-    let wallet = new ethers.Wallet.fromEncryptedJsonSync(
-        encryptedJson,
-        process.env.PRIVATE_KEY_PASSWORD
-        )
-    wallet = await wallet.connect(provider)
+    // const encryptedJson = fs.readFileSync("./encryptedKey.json", "utf8")
+    // let wallet = new ethers.Wallet.fromEncryptedJsonSync(
+    //     encryptedJson,
+    //     process.env.PRIVATE_KEY_PASSWORD
+    //     )
+    // wallet = await wallet.connect(provider)
     const abi = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.abi", "utf8")
     const binary = fs.readFileSync("./SimpleStorage_sol_SimpleStorage.bin", "utf8")
 
@@ -21,6 +20,7 @@ async function main(){
     console.log("Deploying, Please wait...")
     const contract = await contractFactory.deploy();//STOP and wait for the contract to deploy
     await contract.deployTransaction.wait(1)
+    console.log(`Contract address is: ${contract.address}`)
 
     //Interacting with contracts. i.e. calling the methods on our contract SimpleStorage
     //getting the favourite number
