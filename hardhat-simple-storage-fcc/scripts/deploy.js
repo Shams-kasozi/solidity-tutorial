@@ -3,6 +3,7 @@ const { ethers, run, network} = require("hardhat")
 
 //async main
 async function main() {
+  //the code to deploy our contract
   const SimpleStorageFactory = await ethers.getContractFactory(
     "SimpleStorage"
   )
@@ -11,7 +12,7 @@ async function main() {
   await simpleStorage.deployed()
   console.log(`deployed contract to: ${simpleStorage.address}`)
 
-  //if we are on a testnet, this verifies our contract
+  //if we are on a testnet like rinkeby, this code verifies our contract
   if (network.config.chainId === 4 && process.env.ETHERSCAN_API_KEY) {
     await simpleStorage.deployTransaction.wait(6)
     await verify(simpleStorage.address, [])
